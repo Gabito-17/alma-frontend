@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 const Sidebar = () => {
     const [mostrarDesplegable, setMostrarDesplegable] = useState(false);
 
-    const toggleDesplegable = () => {
+    const abrirDesplegable = () => {
         setMostrarDesplegable(!mostrarDesplegable);
     };
 
@@ -38,7 +38,7 @@ const Sidebar = () => {
                     <li
                         className="mb-2 relative p-2"
                         style={{ userSelect: 'none'}}
-                        onMouseEnter={toggleDesplegable}
+                        onMouseEnter={abrirDesplegable}
                         onMouseLeave={cerrarDesplegable}
                     > Parámetros
                         {mostrarDesplegable && (
