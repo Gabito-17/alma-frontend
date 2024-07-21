@@ -72,6 +72,14 @@ const Sidebar = () => {
                   >
                     Tipo Documento
                   </Link>
+                </li>{" "}
+                <li className="mb-2">
+                  <Link
+                    to="/parametros/especialidad"
+                    className="hover:bg-gray-700 p-2 rounded block"
+                  >
+                    Especialidad
+                  </Link>
                 </li>
               </ul>
             )}

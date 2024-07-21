@@ -75,14 +75,7 @@ const SexosForm = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Sexo</h1>
-      <div className="mb-4">
-        <button
-          onClick={fetchSexos}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Obtener Sexos
-        </button>
-      </div>
+
       <form
         onSubmit={handleSubmit}
         className="bg-white p-6 rounded-lg shadow-md mb-4"

@@ -4,11 +4,12 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import Home from "./pages/Home";
-import Paises from "./pages/Paises";
 import Personas from "./pages/Pacientes";
+import Psicologos from "./pages/Psicologos";
 import Sexos from "./pages/Sexos";
 import TipoDocumentos from "./pages/TipoDocumentos";
-import Psicologos from "./pages/Psicologos"
+import EspecialidadesForm from "./pages/Especialidad"; 
+import PaisesForm from "./pages/Paises";
 
 function App() {
   return (
@@ -30,7 +31,8 @@ function App() {
               <Route path="/psicologos" element={<Psicologos />} />
               <Route path="/pacientes" element={<Personas />} />
               <Route path="/parametros/sexo" element={<Sexos />} />
-              <Route path="/parametros/pais" element={<Paises />} />
+              <Route path="/parametros/pais" element={<PaisesForm />} />
+              <Route path="/parametros/especialidad" element={<EspecialidadesForm />} />
               <Route
                 path="/parametros/tipo-documento"
                 element={<TipoDocumentos />}
