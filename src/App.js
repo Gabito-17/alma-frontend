@@ -5,11 +5,11 @@ import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import Home from "./pages/Home";
 import Personas from "./pages/Pacientes";
+import Especialidad from "./pages/parametros/Especialidad";
+import TipoDocumentos from "./pages/parametros/TipoDocumentos";
 import Psicologos from "./pages/Psicologos";
-import Sexos from "./pages/Sexos";
-import TipoDocumentos from "./pages/TipoDocumentos";
-import EspecialidadesForm from "./pages/Especialidad"; 
-import PaisesForm from "./pages/Paises";
+import Sesiones from "./pages/Sesiones";
+import EstadoCivil from "./pages/parametros/EstadoCivil";
 
 function App() {
   return (
@@ -30,13 +30,18 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/psicologos" element={<Psicologos />} />
               <Route path="/pacientes" element={<Personas />} />
-              <Route path="/parametros/sexo" element={<Sexos />} />
-              <Route path="/parametros/pais" element={<PaisesForm />} />
-              <Route path="/parametros/especialidad" element={<EspecialidadesForm />} />
+              <Route path="/sesiones" element={<Sesiones />} />
+              <Route
+                path="/parametros/especialidad"
+                element={<Especialidad />}
+              />
               <Route
                 path="/parametros/tipo-documento"
                 element={<TipoDocumentos />}
-              />
+              /> <Route
+              path="/parametros/estado-civil"
+              element={<EstadoCivil />}
+            />
               {/* Agrega más rutas según sea necesario */}
             </Routes>
           </div>

@@ -17,8 +17,13 @@ const Sidebar = () => {
       <div className="p-4 font-bold text-xl">Consultorio</div>
       <nav className="p-4">
         <ul>
-          <li className="mb-2 p-2" style={{ userSelect: "none" }}>
-            Sesiones
+          <li className="mb-2 " style={{ userSelect: "none" }}>
+            <Link
+              to="/sesiones"
+              className="hover:bg-gray-700 p-2 rounded block"
+            >
+              Sesiones
+            </Link>
           </li>
           <li className="mb-2">
             <Link
@@ -56,13 +61,11 @@ const Sidebar = () => {
             {mostrarDesplegable && (
               <ul className="absolute bg-gray-700 text-white rounded shadow-md mt-1">
                 <li className="p-2">
-                  <Link to="/parametros/sexo" onClick={cerrarDesplegable}>
-                    Sexo
-                  </Link>
-                </li>
-                <li className="p-2">
-                  <Link to="/parametros/pais" onClick={cerrarDesplegable}>
-                    País
+                  <Link
+                    to="/parametros/estado-civil"
+                    onClick={cerrarDesplegable}
+                  >
+                    Estado Civil
                   </Link>
                 </li>
                 <li className="p-2">

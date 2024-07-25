@@ -1,12 +1,14 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 
-const TipoDocumentosForm = () => {
+const TipoDocumentos = () => {
   const [tipoDocumentos, setTipoDocumentos] = useState([]);
-  const [filteredTipoDocumentos, setFilteredTipoDocumentos] = useState([]);
   const [formData, setFormData] = useState({
+    idTipoDocumento: "",
     sigla: "",
     descripcion: "",
+    cantDigitos: "",
+    admiteLetras: false,
   });
   const [filter, setFilter] = useState("");
   const [editing, setEditing] = useState(false);
@@ -18,32 +20,25 @@ const TipoDocumentosForm = () => {
     fetchTipoDocumentos();
   }, []);
 
-  useEffect(() => {
-    setFilteredTipoDocumentos(
-      tipoDocumentos.filter((tipoDocumento) =>
-        tipoDocumento.sigla.toLowerCase().includes(filter.toLowerCase())
-      )
-    );
-  }, [filter, tipoDocumentos]);
-
   const fetchTipoDocumentos = async () => {
     try {
-      const response = await axios.get("http://localhost:4000/tipoDocumentos");
+      const response = await axios.get("http://localhost:4000/tipo-documentos");
       setTipoDocumentos(response.data);
-      setFilteredTipoDocumentos(response.data);
+      console.log(response);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
 
   const handleInputChange = (e) => {
+    const { name, type, checked, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: type === "checkbox" ? checked : value,
     });
 
-    if (e.target.name === "sigla") {
-      checkTipoDocumentoExists(e.target.value);
+    if (name === "sigla") {
+      checkTipoDocumentoExists(value);
     }
   };
 
@@ -69,10 +64,12 @@ const TipoDocumentosForm = () => {
       // Update tipoDocumento
       try {
         await axios.patch(
-          `http://localhost:4000/tipoDocumentos/${formData.idTipoDocumento}`,
+          `http://localhost:4000/tipo-documentos/${formData.idTipoDocumento}`,
           {
             sigla: formData.sigla,
             descripcion: formData.descripcion,
+            cantDigitos: formData.cantDigitos,
+            admiteLetras: formData.admiteLetras,
           }
         );
         setEditing(false);
@@ -89,15 +86,21 @@ const TipoDocumentosForm = () => {
         console.error("Error creating data:", error);
       }
     }
-    setFormData({ idTipoDocumento: null, sigla: "", descripcion: "" });
+    setFormData({
+      idTipoDocumento: null,
+      sigla: "",
+      descripcion: "",
+      cantDigitos: "",
+      admiteLetras: false,
+    });
   };
 
-  const handleEdit = (tipoDocumento) => {
+  const onEdit = (tipoDocumento) => {
     setFormData(tipoDocumento);
     setEditing(true);
   };
 
-  const handleDelete = async (id) => {
+  const onDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:4000/tipoDocumentos/${id}`);
       fetchTipoDocumentos();
@@ -107,7 +110,13 @@ const TipoDocumentosForm = () => {
   };
 
   const handleCancel = () => {
-    setFormData({ idTipoDocumento: null, sigla: "", descripcion: "" });
+    setFormData({
+      idTipoDocumento: null,
+      sigla: "",
+      descripcion: "",
+      cantDigitos: "",
+      admiteLetras: false,
+    });
     setEditing(false);
     setError("");
     setIsButtonDisabled(false);
@@ -130,18 +139,32 @@ const TipoDocumentosForm = () => {
         </h2>
         <div className="mb-4 flex">
           <div className="w-1/5 pr-2">
-            <label className="block text-gray-700 mb-2">Sigla</label>
+            <label className="block text-gray-700 mb-2">Sigla:</label>
             <input
               type="text"
               name="sigla"
               value={formData.sigla}
               onChange={handleInputChange}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              disabled={editing}
             />
             {error && <p className="text-red-500 text-xs italic">{error}</p>}
+          </div>{" "}
+          <div className="w-2/8 pl-2">
+            <label className="block text-gray-700 mb-2">
+              Cantidad de digitos:
+            </label>
+            <input
+              type="number"
+              name="cantDigitos"
+              value={formData.cantDigitos}
+              onChange={handleInputChange}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              disabled={editing}
+            />
           </div>
           <div className="w-2/3 pl-2">
-            <label className="block text-gray-700 mb-2">Descripción</label>
+            <label className="block text-gray-700 mb-2">Descripción:</label>
             <input
               type="text"
               name="descripcion"
@@ -151,24 +174,51 @@ const TipoDocumentosForm = () => {
             />
           </div>
         </div>
+        <div className="w-2/6 pl-2">
+          <label className="block text-gray-700 mb-2">Admite Letras?</label>
+          <input
+            type="checkbox"
+            name="admiteLetras"
+            checked={formData.admiteLetras}
+            onChange={handleInputChange}
+          />
+        </div>
 
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="bg-yellow-500 hover:bg-yellow-700 text-white px-4 py-2 rounded mr-2"
-          >
-            Limpiar Campos
-          </button>
-          <button
-            type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
-            disabled={isButtonDisabled}
-          >
-            {editing
-              ? "Modificar Tipo de Documento"
-              : "Agregar Tipo de Documento"}
-          </button>
+        <div className="col-span-4 flex justify-end space-x-4">
+          {editing ? (
+            <>
+              <button
+                onClick={handleCancel}
+                className="bg-red-300 hover:bg-red-500 text-white  py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              >
+                Cancelar Edición
+              </button>
+              <button
+                type="submit"
+                disabled={isButtonDisabled}
+                className="bg-blue-500 hover:bg-blue-700 text-white  py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              >
+                Guardar
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="bg-gray-500 hover:bg-gray-400 text-white  py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              >
+                Limpiar Campos
+              </button>
+              <button
+                type="submit"
+                disabled={isButtonDisabled}
+                className="bg-green-500 hover:bg-green-700 text-white  py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              >
+                Registrar Tipo Documento
+              </button>
+            </>
+          )}
         </div>
       </form>
       <div className="flex justify-between items-center mb-4">
@@ -181,39 +231,57 @@ const TipoDocumentosForm = () => {
           className="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
         />
       </div>
+
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white rounded-lg shadow-md">
           <thead>
             <tr>
-              <th className="px-4 py-2 border">idTipoDocumento</th>
               <th className="px-4 py-2 border">Sigla</th>
               <th className="px-4 py-2 border">Descripción</th>
-              <th className="px-4 py-2 border">Editar</th>
-              <th className="px-4 py-2 border">Eliminar</th>
+              <th className="px-4 py-2 border">Cantidad de digitos</th>
+              <th className="px-4 py-2 border">admite letras?</th>
+              <th className="px-4 py-2 border">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {filteredTipoDocumentos.map((tipoDocumento) => (
+            {tipoDocumentos.map((tipoDocumento) => (
               <tr key={tipoDocumento.idTipoDocumento}>
-                <td className="px-4 py-2 border">
-                  {tipoDocumento.idTipoDocumento}
-                </td>
                 <td className="px-4 py-2 border">{tipoDocumento.sigla}</td>
                 <td className="px-4 py-2 border">
                   {tipoDocumento.descripcion}
+                </td>{" "}
+                <td className="px-4 py-2 border">
+                  {tipoDocumento.cantDigitos}
+                </td>{" "}
+                <td className="px-4 py-2 border">
+                  {tipoDocumento.admiteLetras ? "Sí" : "No"}
                 </td>
                 <td className="px-4 py-2 border">
                   <button
-                    onClick={() => handleEdit(tipoDocumento)}
-                    className="text-blue-500 hover:underline"
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          "¿Estás seguro de que deseas editar este tipo de documento?"
+                        )
+                      ) {
+                        onEdit(tipoDocumento);
+                      }
+                    }}
+                    className="bg-yellow-500 hover:bg-yellow-700 text-white py-1 px-2 rounded mr-2"
                   >
                     Editar
                   </button>
-                </td>
-                <td className="px-4 py-2 border">
                   <button
-                    onClick={() => handleDelete(tipoDocumento.idTipoDocumento)}
-                    className="text-red-500 hover:underline"
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          "¿Estás seguro de que deseas eliminar este tipo de documento?"
+                        )
+                      ) {
+                        onDelete(tipoDocumento.idTipoDocumento);
+                      }
+                    }}
+                    className="bg-red-500 hover:bg-red-700 text-white  py-1 px-2 rounded"
                   >
                     Eliminar
                   </button>
@@ -227,4 +295,4 @@ const TipoDocumentosForm = () => {
   );
 };
 
-export default TipoDocumentosForm;
+export default TipoDocumentos;
