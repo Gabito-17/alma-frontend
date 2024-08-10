@@ -10,6 +10,9 @@ import TipoDocumentos from "./pages/parametros/TipoDocumentos";
 import Psicologos from "./pages/Psicologos";
 import Sesiones from "./pages/Sesiones";
 import EstadoCivil from "./pages/parametros/EstadoCivil";
+import Secretarios from "./pages/Secretarios";
+import Ocupacion from "./pages/parametros/Ocupacion";
+import InformeSesion from "./pages/InformeSesion";
 
 function App() {
   return (
@@ -31,6 +34,8 @@ function App() {
               <Route path="/psicologos" element={<Psicologos />} />
               <Route path="/pacientes" element={<Personas />} />
               <Route path="/sesiones" element={<Sesiones />} />
+              <Route path="/secretarios" element={<Secretarios />} />
+              <Route path="/informeSesion" element={<InformeSesion />} />
               <Route
                 path="/parametros/especialidad"
                 element={<Especialidad />}
@@ -42,7 +47,10 @@ function App() {
               path="/parametros/estado-civil"
               element={<EstadoCivil />}
             />
-              {/* Agrega más rutas según sea necesario */}
+              <Route
+              path="/parametros/ocupacion"
+              element={<Ocupacion />}
+            />
             </Routes>
           </div>
         </div>

@@ -42,10 +42,20 @@ const Sidebar = () => {
             </Link>
           </li>
           <li className="mb-2 p-2" style={{ userSelect: "none" }}>
-            Secretarios
+          <Link
+              to="/secretarios"
+              className="hover:bg-gray-700 rounded block"
+            >
+              Secretarios
+            </Link>
           </li>
           <li className="mb-2 p-2" style={{ userSelect: "none" }}>
-            Historias Clinicas
+          <Link
+              to="/informeSesion"
+              className="hover:bg-gray-700 rounded block"
+            >
+              Informes Sesiones
+            </Link>
           </li>
           <li className="mb-2 p-2" style={{ userSelect: "none" }}>
             Derivaciones
@@ -82,6 +92,14 @@ const Sidebar = () => {
                     className="hover:bg-gray-700 p-2 rounded block"
                   >
                     Especialidad
+                  </Link>
+                </li>
+                <li className="mb-2">
+                  <Link
+                    to="/parametros/ocupacion"
+                    className="hover:bg-gray-700 p-2 rounded block"
+                  >
+                    Ocupacion
                   </Link>
                 </li>
               </ul>
