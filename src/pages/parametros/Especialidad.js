@@ -22,7 +22,6 @@ const Especialidades = () => {
     try {
       const response = await axios.get("http://localhost:4000/especialidades");
       setEspecialidades(response.data);
-      console.log(response);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -76,6 +75,7 @@ const Especialidades = () => {
     } else {
       // Create new especialidad
       try {
+        delete formData.idEspecialidad;
         await axios.post("http://localhost:4000/especialidades", formData);
         fetchEspecialidades();
       } catch (error) {
@@ -96,7 +96,12 @@ const Especialidades = () => {
 
   const onDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:4000/especialidades/${id}`);
+      const response = await axios.delete(
+        `http://localhost:4000/especialidades/${id}`
+      );
+      if (response.data.status === 409) {
+        alert(response.data.message);
+      }
       fetchEspecialidades();
     } catch (error) {
       console.error("Error deleting data:", error);

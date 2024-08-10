@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 const Sesiones = () => {
   const [sesiones, setSesiones] = useState([]);
   const [formData, setFormData] = useState({
-    idSesion: "",
     fechaHora: "",
     estado: "",
     idPaciente: "",
@@ -47,7 +46,11 @@ const Sesiones = () => {
   const fetchSesiones = async () => {
     try {
       const response = await axios.get("http://localhost:4000/sesiones");
-      setSesiones(response.data);
+      const sesionesConFormato = response.data.map((sesion) => ({
+        ...sesion,
+        fechaHora: new Date(sesion.fechaHora).toLocaleString(), // Convertir a formato legible
+      }));
+      setSesiones(sesionesConFormato);
       console.log(response);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -60,67 +63,60 @@ const Sesiones = () => {
       ...formData,
       [name]: value,
     });
-
-    if (name === "fechaHora") {
-      checkSesionExists(value);
-    }
-  };
-
-  const checkSesionExists = (fechaHora) => {
-    const exists = sesiones.some(
-      (sesion) =>
-        sesion.fechaHora === fechaHora && sesion.idSesion !== formData.idSesion
-    );
-    if (exists) {
-      setError("La sesión ya existe.");
-      setIsButtonDisabled(true);
-    } else {
-      setError("");
-      setIsButtonDisabled(false);
-    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    try {
+      const submitData = {
+        ...formData,
+        idPaciente: parseInt(formData.idPaciente),
+        idPsicologo: parseInt(formData.idPsicologo),
+        fechaHora: new Date(formData.fechaHora).toISOString(),
+      };
+      if (editing) {
+        console.log(formData);
 
-    if (editing) {
-      // Update sesion
-      try {
         await axios.patch(
-          `http://localhost:4000/sesiones/${formData.idSesion}`,
-          {
-            fechaHora: formData.fechaHora,
-            estado: formData.estado,
-            idPaciente: formData.idPaciente,
-            idPsicologo: formData.idPsicologo,
-          }
+          `http://localhost:4000/sesiones/${formData.nroSesion}`,
+          submitData
         );
-        setEditing(false);
-        fetchSesiones();
-      } catch (error) {
-        console.error("Error updating data:", error);
+        alert("Sesion actualizada");
+      } else {
+        console.log(formData);
+        await axios.post("http://localhost:4000/sesiones", submitData);
+        alert("Sesion creada");
       }
-    } else {
-      // Create new sesion
-      try {
-        await axios.post("http://localhost:4000/sesiones", formData);
-        fetchSesiones();
-      } catch (error) {
-        console.error("Error creating data:", error);
-      }
+      setFormData({
+        fechaHora: "",
+        estado: "",
+        idPaciente: "",
+        idPsicologo: "",
+      });
+      fetchSesiones();
+      setEditing(false); // Resetear el modo de edición
+    } catch (error) {
+      const errorMessage = error.response
+        ? error.response.data.message
+        : error.message;
+      alert(`Error: ${errorMessage}`);
+      console.error("Error al crear la Sesion:", errorMessage);
     }
-    setFormData({
-      idSesion: "",
-      fechaHora: "",
-      estado: "",
-      idPaciente: "",
-      idPsicologo: "",
-    });
   };
 
   const onEdit = (sesion) => {
-    setFormData(sesion);
+    // Convertir la fecha y hora al formato requerido por el input datetime-local
+    const formattedFechaHora = new Date(sesion.fechaHora)
+      .toISOString()
+      .slice(0, 16); // `YYYY-MM-DDTHH:MM`
     setEditing(true);
+    setFormData({
+      ...sesion,
+      fechaHora: formattedFechaHora,
+      idPaciente: sesion.paciente.id,
+      idPsicologo: sesion.psicologo.id,
+    });
+    console.log(sesion);
   };
 
   const onDelete = async (id) => {
@@ -134,7 +130,6 @@ const Sesiones = () => {
 
   const handleCancel = () => {
     setFormData({
-      idSesion: "",
       fechaHora: "",
       estado: "",
       idPaciente: "",
@@ -158,10 +153,11 @@ const Sesiones = () => {
         <h2 className="text-xl font-bold mb-4">
           {editing ? "Modificando Sesión" : "Registrando Sesión"}
         </h2>
-        <div className="mb-4 flex">
-          <div className="w-1/2 pr-2">
+        <div className="flex flex-row m-4">
+          <div className="basis-1/2 p-2">
             <label className="block text-gray-700 mb-2">Fecha y Hora:</label>
             <input
+              disabled={formData.estado === "Cancelado"}
               type="datetime-local"
               name="fechaHora"
               value={formData.fechaHora}
@@ -169,49 +165,53 @@ const Sesiones = () => {
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
           </div>
-          <div className="w-1/2 pl-2">
+          <div className="basis-1/2 p-2">
             <label className="block text-gray-700 mb-2">Estado:</label>
             <select
               name="estado"
               value={formData.estado}
+              disabled={formData.estado === "Cancelado"}
               onChange={handleInputChange}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             >
               <option value="">Seleccione un estado</option>
-              <option value="PENDIENTE">PENDIENTE</option>
-              <option value="REALIZADA">REALIZADA</option>
-              <option value="CANCELADA">CANCELADA</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="Realizado">Realizado</option>
+              <option value="Cancelado">Cancelado</option>
             </select>
           </div>
         </div>
-        <div className="mb-4 col-span-2">
-          <label className="block text-gray-700  mb-2 ">*Paciente:</label>
-          <select
-            name="idPaciente"
-            value={formData.idPaciente}
-            onChange={handleInputChange}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          >
-            <option hidden>Seleccionar</option>
-            {pacientes.map((paciente) => (
-              <option key={paciente.id} value={String(paciente.id)}>
-                {paciente.nombre + " " + paciente.apellido}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="mb-4 flex">
-          <div className="mb-4 col-span-2">
+
+        <div className="mb-4 flex flex-row m-4">
+          <div className="basis-1/2 p-2">
+            <label className="block text-gray-700  mb-2 ">*Paciente:</label>
+            <select
+              name="idPaciente"
+              value={formData.idPaciente}
+              onChange={handleInputChange}
+              disabled={editing}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            >
+              <option hidden>Seleccionar</option>
+              {pacientes.map((paciente) => (
+                <option key={paciente.id} value={paciente.id}>
+                  {paciente.nombre + " " + paciente.apellido}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="basis-1/2 p-2">
             <label className="block text-gray-700  mb-2 ">*Psicologo:</label>
             <select
               name="idPsicologo"
               value={formData.idPsicologo}
+              disabled={editing}
               onChange={handleInputChange}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             >
               <option hidden>Seleccionar</option>
               {psicologos.map((psicologo) => (
-                <option key={psicologo.id} value={String(psicologo.id)}>
+                <option key={psicologo.id} value={psicologo.id}>
                   {psicologo.nombre + " " + psicologo.apellido}
                 </option>
               ))}
@@ -272,9 +272,9 @@ const Sesiones = () => {
           <thead>
             <tr>
               <th className="px-4 py-2 border">Fecha y Hora</th>
-              <th className="px-4 py-2 border">Estado</th>
               <th className="px-4 py-2 border">Paciente</th>
               <th className="px-4 py-2 border">Psicólogo</th>
+              <th className="px-4 py-2 border">Estado</th>
               <th className="px-4 py-2 border">Acciones</th>
             </tr>
           </thead>
@@ -284,11 +284,16 @@ const Sesiones = () => {
                 sesion.estado.toLowerCase().includes(filter.toLowerCase())
               )
               .map((sesion) => (
-                <tr key={sesion.idSesion}>
+                <tr key={sesion.nroSesion}>
                   <td className="px-4 py-2 border">{sesion.fechaHora}</td>
+
+                  <td className="px-4 py-2 border">
+                    {sesion.paciente.nombre + " " + sesion.paciente.apellido}
+                  </td>
+                  <td className="px-4 py-2 border">
+                    {sesion.psicologo.nombre + " " + sesion.psicologo.apellido}
+                  </td>
                   <td className="px-4 py-2 border">{sesion.estado}</td>
-                  <td className="px-4 py-2 border">{sesion.idPaciente}</td>
-                  <td className="px-4 py-2 border">{sesion.idPsicologo}</td>
                   <td className="px-4 py-2 border">
                     <button
                       onClick={() => {
@@ -308,15 +313,15 @@ const Sesiones = () => {
                       onClick={() => {
                         if (
                           window.confirm(
-                            "¿Estás seguro de que deseas eliminar esta sesión?"
+                            "¿Estás seguro de que deseas cancelar esta sesión?"
                           )
                         ) {
-                          onDelete(sesion.idSesion);
+                          onDelete(sesion.nroSesion);
                         }
                       }}
                       className="bg-red-500 hover:bg-red-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline"
                     >
-                      Eliminar
+                      Cancelar
                     </button>
                   </td>
                 </tr>

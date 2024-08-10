@@ -206,21 +206,31 @@ const Psicologos = () => {
           `http://localhost:4000/psicologos/${formData.numeroDoc}`,
           formData
         );
-        mostrarAlerta("psicologo Actualizado");
+        mostrarAlerta("Psicólogo Actualizado");
       } else {
         console.log(formData);
         await axios.post("http://localhost:4000/psicologos", formData);
-        mostrarAlerta("psicologo Creado");
+        mostrarAlerta("Psicólogo Creado");
       }
       limpiarCampos();
       fetchPsicologos();
       setIsEditing(false); // Resetear el modo de edición
     } catch (error) {
       console.log("no anda");
-      console.error(
-        "Error al crear psicologo:",
-        error.response ? error.response.data : error.message
-      );
+      if (error.response) {
+        // Verifica si el error es un conflicto (409)
+        if (error.response.status === 409) {
+          mostrarAlerta("Psicólogo con el mismo número de documento ya existe");
+        } else {
+          console.error("Error al crear psicólogo:", error.response.data);
+          mostrarAlerta(
+            `Error al crear psicólogo: ${error.response.data.message}`
+          );
+        }
+      } else {
+        console.error("Error al crear psicólogo:", error.message);
+        mostrarAlerta(`Error al crear psicólogo: ${error.message}`);
+      }
     }
   };
 

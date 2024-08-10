@@ -24,7 +24,6 @@ const TipoDocumentos = () => {
     try {
       const response = await axios.get("http://localhost:4000/tipo-documentos");
       setTipoDocumentos(response.data);
-      console.log(response);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -80,14 +79,20 @@ const TipoDocumentos = () => {
     } else {
       // Create new tipoDocumento
       try {
-        await axios.post("http://localhost:4000/tipoDocumentos", formData);
+        formData.cantDigitos = parseInt(formData.cantDigitos);
+        await axios.post("http://localhost:4000/tipo-documentos", {
+          sigla: formData.sigla,
+          descripcion: formData.descripcion,
+          cantDigitos: formData.cantDigitos,
+          admiteLetras: formData.admiteLetras,
+        });
         fetchTipoDocumentos();
       } catch (error) {
         console.error("Error creating data:", error);
       }
     }
     setFormData({
-      idTipoDocumento: null,
+      idTipoDocumento: "",
       sigla: "",
       descripcion: "",
       cantDigitos: "",
@@ -102,11 +107,14 @@ const TipoDocumentos = () => {
 
   const onDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:4000/tipoDocumentos/${id}`);
+      const response = await axios.delete(
+        `http://localhost:4000/tipo-documentos/${id}`
+      );
+      if (response.data.status === 409) {
+        alert(response.data.message);
+      }
       fetchTipoDocumentos();
-    } catch (error) {
-      console.error("Error deleting data:", error);
-    }
+    } catch (error) {}
   };
 
   const handleCancel = () => {
@@ -249,10 +257,10 @@ const TipoDocumentos = () => {
                 <td className="px-4 py-2 border">{tipoDocumento.sigla}</td>
                 <td className="px-4 py-2 border">
                   {tipoDocumento.descripcion}
-                </td>{" "}
+                </td>
                 <td className="px-4 py-2 border">
                   {tipoDocumento.cantDigitos}
-                </td>{" "}
+                </td>
                 <td className="px-4 py-2 border">
                   {tipoDocumento.admiteLetras ? "Sí" : "No"}
                 </td>

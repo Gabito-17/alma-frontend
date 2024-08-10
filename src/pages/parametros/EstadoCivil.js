@@ -2,10 +2,11 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 
 const EstadoCivil = () => {
-  const [estadosCiviles, setEstadosCiviles] = useState([]);
+  const [estadoscivil, setEstadoscivil] = useState([]);
   const [formData, setFormData] = useState({
     idEstadoCivil: "",
     nombre: "",
+    descripcion: "",
   });
   const [filter, setFilter] = useState("");
   const [editing, setEditing] = useState(false);
@@ -14,14 +15,13 @@ const EstadoCivil = () => {
 
   useEffect(() => {
     // Fetch initial data
-    fetchEstadosCiviles();
+    fetchEstadoscivil();
   }, []);
 
-  const fetchEstadosCiviles = async () => {
+  const fetchEstadoscivil = async () => {
     try {
-      const response = await axios.get("http://localhost:4000/estados-civiles");
-      setEstadosCiviles(response.data);
-      console.log(response);
+      const response = await axios.get("http://localhost:4000/estado-civil");
+      setEstadoscivil(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -40,7 +40,7 @@ const EstadoCivil = () => {
   };
 
   const checkEstadoCivilExists = (nombre) => {
-    const exists = estadosCiviles.some(
+    const exists = estadoscivil.some(
       (estadoCivil) =>
         estadoCivil.nombre === nombre &&
         estadoCivil.idEstadoCivil !== formData.idEstadoCivil
@@ -61,21 +61,25 @@ const EstadoCivil = () => {
       // Update estado civil
       try {
         await axios.patch(
-          `http://localhost:4000/estados-civiles/${formData.idEstadoCivil}`,
+          `http://localhost:4000/estado-civil/${formData.idEstadoCivil}`,
           {
             nombre: formData.nombre,
+            descripcion: formData.descripcion,
           }
         );
         setEditing(false);
-        fetchEstadosCiviles();
+        fetchEstadoscivil();
       } catch (error) {
         console.error("Error updating data:", error);
       }
     } else {
       // Create new estado civil
       try {
-        await axios.post("http://localhost:4000/estados-civiles", formData);
-        fetchEstadosCiviles();
+        await axios.post("http://localhost:4000/estado-civil", {
+          nombre: formData.nombre,
+          descripcion: formData.descripcion,
+        });
+        fetchEstadoscivil();
       } catch (error) {
         console.error("Error creating data:", error);
       }
@@ -83,6 +87,7 @@ const EstadoCivil = () => {
     setFormData({
       idEstadoCivil: "",
       nombre: "",
+      descripcion: "",
     });
   };
 
@@ -93,10 +98,32 @@ const EstadoCivil = () => {
 
   const onDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:4000/estados-civiles/${id}`);
-      fetchEstadosCiviles();
+      const response = await axios.delete(
+        `http://localhost:4000/estado-civil/${id}`
+      );
+
+      if (response.status === 200) {
+        alert(response.data.message);
+      }
+
+      fetchEstadoscivil();
     } catch (error) {
-      console.error("Error deleting data:", error);
+      if (error.response) {
+        // El servidor respondió con un código de estado fuera del rango de 2xx
+        if (error.response.status === 409) {
+          alert(error.response.data.message); // Muestra mensaje de conflicto
+        } else if (error.response.status === 404) {
+          alert(error.response.data.message); // Muestra mensaje de no encontrado
+        } else {
+          alert(
+            "Error al eliminar el estado civil: " + error.response.data.message
+          );
+        }
+      } else {
+        // Ocurrió un error al configurar la solicitud
+        console.error("Error deleting data:", error);
+        alert("Error al eliminar el estado civil");
+      }
     }
   };
 
@@ -104,6 +131,7 @@ const EstadoCivil = () => {
     setFormData({
       idEstadoCivil: "",
       nombre: "",
+      descripcion: "",
     });
     setEditing(false);
     setError("");
@@ -123,19 +151,30 @@ const EstadoCivil = () => {
         <h2 className="text-xl font-bold mb-4">
           {editing ? "Modificando Estado Civil" : "Registrando Estado Civil"}
         </h2>
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Nombre:</label>
-          <input
-            type="text"
-            name="nombre"
-            value={formData.nombre}
-            onChange={handleInputChange}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            disabled={editing}
-          />
-          {error && <p className="text-red-500 text-xs italic">{error}</p>}
+        <div className="mb-4 flex">
+          <div className="pr-2 w-1/2">
+            <label className="block text-gray-700 mb-2">Nombre:</label>
+            <input
+              type="text"
+              name="nombre"
+              value={formData.nombre}
+              onChange={handleInputChange}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+            {error && <p className="text-red-500 text-xs italic">{error}</p>}
+          </div>
+          <div className="pr-2 w-1/2">
+            <label className="block text-gray-700 mb-2">Descripcion:</label>
+            <input
+              type="text"
+              name="descripcion"
+              value={formData.descripcion}
+              onChange={handleInputChange}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
+            {error && <p className="text-red-500 text-xs italic">{error}</p>}
+          </div>
         </div>
-
         <div className="flex justify-end space-x-4">
           {editing ? (
             <>
@@ -174,7 +213,7 @@ const EstadoCivil = () => {
         </div>
       </form>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Estados Civiles</h2>
+        <h2 className="text-xl font-bold">Estados civil</h2>
         <input
           type="text"
           placeholder="Filtrar por Nombre"
@@ -189,17 +228,21 @@ const EstadoCivil = () => {
           <thead>
             <tr>
               <th className="px-4 py-2 border">Nombre</th>
+              <th className="px-4 py-2 border">Descripcion</th>
               <th className="px-4 py-2 border">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {estadosCiviles
+            {estadoscivil
               .filter((estadoCivil) =>
                 estadoCivil.nombre.toLowerCase().includes(filter.toLowerCase())
               )
               .map((estadoCivil) => (
                 <tr key={estadoCivil.idEstadoCivil}>
                   <td className="px-4 py-2 border">{estadoCivil.nombre}</td>
+                  <td className="px-4 py-2 border">
+                    {estadoCivil.descripcion}
+                  </td>
                   <td className="px-4 py-2 border">
                     <button
                       onClick={() => {

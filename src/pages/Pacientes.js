@@ -52,9 +52,6 @@ const Pacientes = () => {
       ocupacion: "",
     });
   };
-  function mostrarAlerta(a) {
-    alert(a);
-  }
 
   //Calcular la edad de un paciente
   const calcularEdad = (fechaNacimiento) => {
@@ -222,17 +219,29 @@ const Pacientes = () => {
           `http://localhost:4000/pacientes/${formData.numeroDoc}`,
           formData
         );
-        mostrarAlerta("Paciente Actualizado");
+        alert("Paciente Actualizado");
       } else {
         console.log(formData);
         await axios.post("http://localhost:4000/pacientes", formData);
-        mostrarAlerta("Paciente Creado");
+        alert("Paciente Creado");
       }
       limpiarCampos();
       fetchpacientes();
       setIsEditing(false); // Resetear el modo de edición
     } catch (error) {
       console.log("no anda");
+      if (error.response) {
+        if (error.response.status === 409) {
+          // Manejar el error de conflicto
+          alert("El paciente ya existe.");
+        } else {
+          // Manejar otros errores de respuesta
+          alert(`Error: ${error.response.data.message || error.message}`);
+        }
+      } else {
+        // Manejar errores sin respuesta del servidor
+        alert(`Error: ${error.message}`);
+      }
       console.error(
         "Error al crear paciente:",
         error.response ? error.response.data : error.message
@@ -300,6 +309,7 @@ const Pacientes = () => {
               *Tipo de Documento:
             </label>
             <select
+              disabled={isEditing}
               name="idTipoDocumento"
               value={formData.idTipoDocumento}
               onChange={handleChange}
@@ -338,6 +348,7 @@ const Pacientes = () => {
               </p>
             )}
             <input
+              disabled={isEditing}
               type="text"
               name="numeroDoc"
               value={formData.numeroDoc}
