@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 const Ocupacion = () => {
   const [ocupaciones, setocupaciones] = useState([]);
   const [formData, setFormData] = useState({
-    idocupacion: "",
+    idOcupacion: "",
     nombre: "",
     descripcion: "",
   });
@@ -57,12 +57,13 @@ const Ocupacion = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log(editing);
 
     if (editing) {
       // Update ocupacion
       try {
         await axios.patch(
-          `http://localhost:4000/ocupaciones/${formData.idocupacion}`,
+          `http://localhost:4000/ocupaciones/${formData.idOcupacion}`,
           {
             nombre: formData.nombre,
             descripcion: formData.descripcion,
@@ -70,20 +71,25 @@ const Ocupacion = () => {
         );
         setEditing(false);
         fetchocupaciones();
+        alert("Ocupacion actualizada");
       } catch (error) {
-        console.error("Error updating data:", error);
+        alert(error.response.data.message);
       }
     } else {
       // Create new ocupacion
       try {
-        await axios.post("http://localhost:4000/ocupaciones", formData);
+        await axios.post("http://localhost:4000/ocupaciones", {
+          nombre: formData.nombre,
+          descripcion: formData.descripcion,
+        });
         fetchocupaciones();
       } catch (error) {
+        alert(error.response.data.message);
         console.error("Error creating data:", error);
       }
     }
     setFormData({
-      idocupacion: "",
+      idOcupacion: "",
       nombre: "",
       descripcion: "",
     });
@@ -136,7 +142,6 @@ const Ocupacion = () => {
               value={formData.nombre}
               onChange={handleInputChange}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              disabled={editing}
             />
             {error && <p className="text-red-500 text-xs italic">{error}</p>}
           </div>
@@ -215,11 +220,9 @@ const Ocupacion = () => {
                 ocupacion.nombre.toLowerCase().includes(filter.toLowerCase())
               )
               .map((ocupacion) => (
-                <tr key={ocupacion.idocupacion}>
+                <tr key={ocupacion.idOcupacion}>
                   <td className="px-4 py-2 border">{ocupacion.nombre}</td>
-                  <td className="px-4 py-2 border">
-                    {ocupacion.descripcion}
-                  </td>
+                  <td className="px-4 py-2 border">{ocupacion.descripcion}</td>
                   <td className="px-4 py-2 border">
                     <button
                       onClick={() => {
@@ -242,7 +245,7 @@ const Ocupacion = () => {
                             "¿Estás seguro de que deseas eliminar esta ocupacion?"
                           )
                         ) {
-                          onDelete(ocupacion.idocupacion);
+                          onDelete(ocupacion.idOcupacion);
                         }
                       }}
                       className="bg-red-500 hover:bg-red-700 text-white py-1 px-2 rounded"

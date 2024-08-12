@@ -5,21 +5,17 @@ const Sesiones = () => {
   const [sesiones, setSesiones] = useState([]);
   const [formData, setFormData] = useState({
     fechaHora: "",
-    estado: "",
     idPaciente: "",
     idPsicologo: "",
   });
   const [filter, setFilter] = useState("");
   const [editing, setEditing] = useState(false);
-  const [error, setError] = useState("");
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-  const [psicologos, setPsicologos] = useState([]);
   const [pacientes, setPacientes] = useState([]);
 
   useEffect(() => {
     // Fetch initial data
     fetchSesiones();
-    fetchPsicologos();
     fetchPacientes();
   }, []);
 
@@ -27,16 +23,6 @@ const Sesiones = () => {
     try {
       const response = await axios.get("http://localhost:4000/pacientes");
       setPacientes(response.data);
-      console.log(response);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
-
-  const fetchPsicologos = async () => {
-    try {
-      const response = await axios.get("http://localhost:4000/psicologos");
-      setPsicologos(response.data);
       console.log(response);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -59,10 +45,29 @@ const Sesiones = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+
+    // Si el campo que cambió es el paciente
+    if (name === "idPaciente") {
+      const selectedPaciente = pacientes.find(
+        (paciente) => paciente.id === parseInt(value)
+      );
+      console.log(selectedPaciente.psicologoAsignado);
+
+      // Si se encuentra el paciente, actualizar el idPsicologo en formData
+      if (selectedPaciente) {
+        setFormData({
+          ...formData,
+          [name]: value, // Actualizar idPaciente
+          idPsicologo: selectedPaciente.psicologoAsignado.id, // Asignar idPsicologo correspondiente
+        });
+      }
+    } else {
+      // Si no es el campo idPaciente, actualizar normalmente
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -136,7 +141,6 @@ const Sesiones = () => {
       idPsicologo: "",
     });
     setEditing(false);
-    setError("");
     setIsButtonDisabled(false);
   };
 
@@ -152,36 +156,7 @@ const Sesiones = () => {
       >
         <h2 className="text-xl font-bold mb-4">
           {editing ? "Modificando Sesión" : "Registrando Sesión"}
-        </h2>
-        <div className="flex flex-row m-4">
-          <div className="basis-1/2 p-2">
-            <label className="block text-gray-700 mb-2">Fecha y Hora:</label>
-            <input
-              disabled={formData.estado === "Cancelado"}
-              type="datetime-local"
-              name="fechaHora"
-              value={formData.fechaHora}
-              onChange={handleInputChange}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            />
-          </div>
-          <div className="basis-1/2 p-2">
-            <label className="block text-gray-700 mb-2">Estado:</label>
-            <select
-              name="estado"
-              value={formData.estado}
-              disabled={formData.estado === "Cancelado"}
-              onChange={handleInputChange}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            >
-              <option value="">Seleccione un estado</option>
-              <option value="Pendiente">Pendiente</option>
-              <option value="Realizado">Realizado</option>
-              <option value="Cancelado">Cancelado</option>
-            </select>
-          </div>
-        </div>
-
+        </h2>{" "}
         <div className="mb-4 flex flex-row m-4">
           <div className="basis-1/2 p-2">
             <label className="block text-gray-700  mb-2 ">*Paciente:</label>
@@ -201,24 +176,17 @@ const Sesiones = () => {
             </select>
           </div>
           <div className="basis-1/2 p-2">
-            <label className="block text-gray-700  mb-2 ">*Psicologo:</label>
-            <select
-              name="idPsicologo"
-              value={formData.idPsicologo}
-              disabled={editing}
+            <label className="block text-gray-700 mb-2">*Fecha y Hora:</label>
+            <input
+              disabled={formData.estado === "Cancelado"}
+              type="datetime-local"
+              name="fechaHora"
+              value={formData.fechaHora}
               onChange={handleInputChange}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            >
-              <option hidden>Seleccionar</option>
-              {psicologos.map((psicologo) => (
-                <option key={psicologo.id} value={psicologo.id}>
-                  {psicologo.nombre + " " + psicologo.apellido}
-                </option>
-              ))}
-            </select>
+            />
           </div>
         </div>
-
         <div className="col-span-4 flex justify-end space-x-4">
           {editing ? (
             <>
@@ -305,7 +273,12 @@ const Sesiones = () => {
                           onEdit(sesion);
                         }
                       }}
-                      className="bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline mr-2"
+                      className={`py-1 px-2 rounded focus:outline-none focus:shadow-outline mr-2 ${
+                        sesion.estado !== "Pendiente"
+                          ? "bg-gray-400 text-gray-600 cursor-not-allowed" // Estilos para el botón deshabilitado
+                          : "bg-blue-500 hover:bg-blue-700 text-white"
+                      }`}
+                      disabled={sesion.estado !== "Pendiente"}
                     >
                       Editar
                     </button>
@@ -319,7 +292,12 @@ const Sesiones = () => {
                           onDelete(sesion.nroSesion);
                         }
                       }}
-                      className="bg-red-500 hover:bg-red-700 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline"
+                      className={`py-1 px-2 rounded focus:outline-none focus:shadow-outline" ${
+                        sesion.estado !== "Pendiente"
+                          ? "bg-gray-400 text-gray-600 cursor-not-allowed" // Estilos para el botón deshabilitado
+                          : "bg-red-500 hover:bg-red-700 text-white"
+                      }`}
+                      disabled={sesion.estado !== "Pendiente"}
                     >
                       Cancelar
                     </button>

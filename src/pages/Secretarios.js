@@ -12,7 +12,6 @@ const Secretarios = () => {
     sexo: "",
     fechaNacimiento: "",
     email: "",
-    idEstadoCivil: "",
   });
   const Sexo = {
     MASCULINO: "Masculino",
@@ -22,7 +21,6 @@ const Secretarios = () => {
   };
 
   const [tiposDocumento, setTiposDocumento] = useState([]);
-  const [estadoCivil, setEstadoCivil] = useState([]);
   const [secretarios, setsecretarios] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [erroresTexto, setErroresTexto] = useState({
@@ -44,7 +42,6 @@ const Secretarios = () => {
       email: "",
       idTipoDocumento: "",
       sexo: "",
-      idEstadoCivil: "",
     });
   };
   function mostrarAlerta(a) {
@@ -124,7 +121,7 @@ const Secretarios = () => {
         `http://localhost:4000/secretarios/${secretario.numeroDoc}`
       );
       console.log("secretario eliminado:", response.data);
-      fetchsecretarios();
+      fetchSecretarios();
     } catch (error) {
       console.error(
         "Error al eliminar el secretario:",
@@ -152,18 +149,16 @@ const Secretarios = () => {
       email: secretario.email,
       idTipoDocumento: String(secretario.tipoDocumento.idTipoDocumento),
       sexo: secretario.sexo,
-      idEstadoCivil: String(secretario.estadoCivil.idEstadoCivil),
     });
     setIsEditing(true);
   };
 
   useEffect(() => {
-    fetchsecretarios();
+    fetchSecretarios();
     fetchTiposDocumento();
-    fetchEstadoCivil();
   }, []);
 
-  const fetchsecretarios = async () => {
+  const fetchSecretarios = async () => {
     try {
       const response = await axios.get("http://localhost:4000/secretarios");
       setsecretarios(response.data);
@@ -180,14 +175,6 @@ const Secretarios = () => {
       console.error("Error al obtener los tipos de documento:", error);
     }
   };
-  const fetchEstadoCivil = async () => {
-    try {
-      const response = await axios.get("http://localhost:4000/estado-civil");
-      setEstadoCivil(response.data);
-    } catch (error) {
-      console.error("Error al obtener los estados civiles:", error);
-    }
-  };
 
   const handleBlur = (e) => {
     const { name, value } = e.target;
@@ -200,6 +187,11 @@ const Secretarios = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      if (fechaNacimientoError === true) {
+        alert("Error: Debe ser mayor de edad");
+        return;
+      }
+
       if (isEditing) {
         console.log(formData);
         await axios.patch(
@@ -210,17 +202,14 @@ const Secretarios = () => {
       } else {
         console.log(formData);
         await axios.post("http://localhost:4000/secretarios", formData);
-        mostrarAlerta("secretario Creado");
+        mostrarAlerta("Secretario Creado");
       }
       limpiarCampos();
-      fetchsecretarios();
+      fetchSecretarios();
       setIsEditing(false); // Resetear el modo de edición
     } catch (error) {
-      console.log("no anda");
-      console.error(
-        "Error al crear secretario:",
-        error.response ? error.response.data : error.message
-      );
+      console.log(error);
+      alert(error.response.data.message);
     }
   };
 
@@ -289,6 +278,7 @@ const Secretarios = () => {
               onChange={handleChange}
               onBlur={handleBlur}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              disabled={isEditing}
             >
               <option hidden>Seleccionar</option>
               {tiposDocumento.map((documento) => (
@@ -322,6 +312,7 @@ const Secretarios = () => {
               </p>
             )}
             <input
+              disabled={isEditing}
               type="text"
               name="numeroDoc"
               value={formData.numeroDoc}
@@ -449,27 +440,6 @@ const Secretarios = () => {
             />
           </div>
 
-          <div className="mb-4 col-span-2">
-            <label className="block text-gray-700  mb-2 ">Estado Civil:</label>
-            <select
-              name="idEstadoCivil"
-              value={formData.idEstadoCivil}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            >
-              <option hidden>Seleccionar</option>
-              {estadoCivil.map((tipo) => (
-                <option
-                  key={tipo.idEstadoCivil}
-                  value={String(tipo.idEstadoCivil)}
-                >
-                  {tipo.nombre}
-                </option>
-              ))}
-            </select>
-          </div>
-
           <div className="mb-4">
             <label className="block text-gray-700  mb-2">
               *Fecha de Nacimiento:
@@ -494,6 +464,7 @@ const Secretarios = () => {
           {isEditing ? (
             <>
               <button
+                type="button"
                 onClick={() => {
                   setIsEditing(false);
                   limpiarCampos();
@@ -512,6 +483,7 @@ const Secretarios = () => {
           ) : (
             <>
               <button
+                type="button"
                 onClick={limpiarCampos}
                 className="bg-gray-500 hover:bg-gray-400 text-white  py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               >
@@ -549,7 +521,9 @@ const Secretarios = () => {
               <td className="py-2 px-4 border-b">{secretario.apellido}</td>
               <td className="py-2 px-4 border-b">{secretario.telefono}</td>
               <td className="py-2 px-4 border-b">{secretario.direccion}</td>
-              <td className="py-2 px-4 border-b">{secretario.fechaNacimiento}</td>
+              <td className="py-2 px-4 border-b">
+                {secretario.fechaNacimiento}
+              </td>
               <td className="py-2 px-4 border-b">{secretario.email}</td>
               <td className="py-2 px-4 border-b flex">
                 <button

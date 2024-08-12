@@ -69,11 +69,13 @@ const EstadoCivil = () => {
         );
         setEditing(false);
         fetchEstadoscivil();
+        alert("EstadoCivil Actualizado");
       } catch (error) {
         console.error("Error updating data:", error);
+        alert(error.response.data.message);
       }
     } else {
-      // Create new estado civil
+      // Crear nuevo estado civil
       try {
         await axios.post("http://localhost:4000/estado-civil", {
           nombre: formData.nombre,
@@ -81,6 +83,9 @@ const EstadoCivil = () => {
         });
         fetchEstadoscivil();
       } catch (error) {
+        if (error.response.status === 409) {
+          alert(error.response.data.message);
+        }
         console.error("Error creating data:", error);
       }
     }
@@ -206,7 +211,7 @@ const EstadoCivil = () => {
                 disabled={isButtonDisabled}
                 className="bg-green-500 hover:bg-green-700 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               >
-                Registrar Estado Civil
+                Guardar Estado Civil
               </button>
             </>
           )}

@@ -71,6 +71,7 @@ const Especialidades = () => {
         fetchEspecialidades();
       } catch (error) {
         console.error("Error updating data:", error);
+        alert(error.response.data.message);
       }
     } else {
       // Create new especialidad
@@ -141,7 +142,6 @@ const Especialidades = () => {
               value={formData.nombre}
               onChange={handleInputChange}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              disabled={editing}
             />
             {error && <p className="text-red-500 text-xs italic">{error}</p>}
           </div>
@@ -188,7 +188,7 @@ const Especialidades = () => {
                 disabled={isButtonDisabled}
                 className="bg-green-500 hover:bg-green-700 text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               >
-                Registrar Especialidad
+                Guardar Especialidad
               </button>
             </>
           )}

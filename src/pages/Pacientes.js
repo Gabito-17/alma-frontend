@@ -12,7 +12,7 @@ const Pacientes = () => {
     sexo: "",
     fechaNacimiento: "",
     email: "",
-    ocupacion: "",
+    idOcupacion: "",
     idEstadoCivil: "",
     idPsicologoAsignado: "",
   });
@@ -27,6 +27,7 @@ const Pacientes = () => {
   const [estadoCivil, setEstadoCivil] = useState([]);
   const [psicologos, setPsicologos] = useState([]);
   const [pacientes, setpacientes] = useState([]);
+  const [ocupaciones, setOcupaciones] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [erroresTexto, setErroresTexto] = useState({
     nombre: { vacio: false, contieneNumeros: false, contieneSimbolos: false },
@@ -49,7 +50,7 @@ const Pacientes = () => {
       sexo: "",
       idEstadoCivil: "",
       idPsicologoAsignado: "",
-      ocupacion: "",
+      idOcupacion: "",
     });
   };
 
@@ -94,18 +95,6 @@ const Pacientes = () => {
     } else {
       return true;
     }
-  };
-
-  const validarNroDoc = (numeroDoc) => {
-    const vacio = numeroDoc.trim() === "";
-    const contieneLetras = /[a-zA-Z]/.test(numeroDoc);
-    const contieneSimbolos = /[!@#$%^&*(),.?":{}|<>+-]/.test(numeroDoc);
-
-    return {
-      vacio,
-      contieneLetras,
-      contieneSimbolos,
-    };
   };
 
   //Validar un input que debe contener solo texto
@@ -166,7 +155,16 @@ const Pacientes = () => {
     fetchTiposDocumento();
     fetchEstadoCivil();
     fetchPsicologos();
+    fetchOcupaciones();
   }, []);
+  const fetchOcupaciones = async () => {
+    try {
+      const response = await axios.get("http://localhost:4000/ocupaciones");
+      setOcupaciones(response.data);
+    } catch (error) {
+      console.error("Error al obtener las ocupaciones:", error);
+    }
+  };
 
   const fetchpacientes = async () => {
     try {
@@ -213,6 +211,10 @@ const Pacientes = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      if (fechaNacimientoError) {
+        alert("Error: Debe ser mayor de Edad");
+        return;
+      }
       if (isEditing) {
         console.log(formData);
         await axios.patch(
@@ -233,7 +235,7 @@ const Pacientes = () => {
       if (error.response) {
         if (error.response.status === 409) {
           // Manejar el error de conflicto
-          alert("El paciente ya existe.");
+          alert(`Error: ${error.response.data.message || error.message}`);
         } else {
           // Manejar otros errores de respuesta
           alert(`Error: ${error.response.data.message || error.message}`);
@@ -261,13 +263,6 @@ const Pacientes = () => {
       } else {
         setFechaNacimientoError(false);
       }
-    }
-    if (name === "numeroDoc") {
-      const errores = validarNroDoc(value);
-      setErroresTexto((prevErrores) => ({
-        ...prevErrores,
-        [name]: errores,
-      }));
     }
     if (name === "nombre" || name === "apellido") {
       const errores = validarTexto(value);
@@ -478,13 +473,23 @@ const Pacientes = () => {
 
           <div className="mb-4 col-span-2">
             <label className="block text-gray-700  mb-2 ">Ocupacion:</label>
-            <input
-              name="ocupacion"
-              value={formData.ocupacion}
+            <select
+              name="idOcupacion"
+              value={formData.idOcupacion}
               onChange={handleChange}
               onBlur={handleBlur}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            />
+            >
+              <option hidden>Seleccionar</option>
+              {ocupaciones.map((ocupacion) => (
+                <option
+                  key={ocupacion.idOcupacion}
+                  value={String(ocupacion.idOcupacion)}
+                >
+                  {ocupacion.nombre}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="mb-4 col-span-2">
@@ -551,6 +556,7 @@ const Pacientes = () => {
           {isEditing ? (
             <>
               <button
+                type="button"
                 onClick={() => {
                   setIsEditing(false);
                   limpiarCampos();
@@ -569,11 +575,13 @@ const Pacientes = () => {
           ) : (
             <>
               <button
+                type="button"
                 onClick={limpiarCampos}
                 className="bg-gray-500 hover:bg-gray-400 text-white  py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               >
                 Limpiar Campos
               </button>
+
               <button
                 type="submit"
                 className="bg-green-500 hover:bg-green-700 text-white  py-2 px-4 rounded focus:outline-none focus:shadow-outline"
@@ -585,7 +593,7 @@ const Pacientes = () => {
         </div>
       </form>
 
-      <table className="min-w-full bg-white border border-gray-200 mt-8">
+      <table className="bg-white p-8 rounded-lg shadow-md max-w-full mx-auto h-full mt-8">
         <thead>
           <tr>
             <th className="py-2 px-4 border-b">Número de Documento</th>

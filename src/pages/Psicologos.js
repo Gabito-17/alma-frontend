@@ -200,6 +200,10 @@ const Psicologos = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      if (fechaNacimientoError === true) {
+        alert("Error: Debe ser mayor de edad");
+        return;
+      }
       if (isEditing) {
         console.log(formData);
         await axios.patch(
@@ -220,16 +224,13 @@ const Psicologos = () => {
       if (error.response) {
         // Verifica si el error es un conflicto (409)
         if (error.response.status === 409) {
-          mostrarAlerta("Psicólogo con el mismo número de documento ya existe");
+          mostrarAlerta(error.response.data.message);
         } else {
           console.error("Error al crear psicólogo:", error.response.data);
           mostrarAlerta(
             `Error al crear psicólogo: ${error.response.data.message}`
           );
         }
-      } else {
-        console.error("Error al crear psicólogo:", error.message);
-        mostrarAlerta(`Error al crear psicólogo: ${error.message}`);
       }
     }
   };
@@ -471,7 +472,6 @@ const Psicologos = () => {
               </p>
             )}
             <input
-              disabled={isEditing}
               type="date"
               id="fechaNacimiento"
               name="fechaNacimiento"
@@ -535,14 +535,14 @@ const Psicologos = () => {
                 type="submit"
                 className="bg-green-500 hover:bg-green-700 text-white  py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               >
-                Registrar psicologo
+                Guardar psicologo
               </button>
             </>
           )}
         </div>
       </form>
 
-      <table className="min-w-full bg-white border border-gray-200 mt-8">
+      <table className="bg-white p-8 rounded-lg shadow-md max-w-full mx-auto h-full mt-8">
         <thead>
           <tr>
             <th className="py-2 px-4 border-b">Número de Documento</th>
