@@ -1,7 +1,9 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 const Sesiones = () => {
+  const { idPaciente } = useParams();
   const [sesiones, setSesiones] = useState([]);
   const [formData, setFormData] = useState({
     fechaHora: "",
@@ -11,13 +13,19 @@ const Sesiones = () => {
   const [filter, setFilter] = useState("");
   const [editing, setEditing] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const navigate = useNavigate();
   const [pacientes, setPacientes] = useState([]);
 
   useEffect(() => {
-    // Fetch initial data
-    fetchSesiones();
-    fetchPacientes();
-  }, []);
+    if (idPaciente) {
+      // Fetch sesiones de un paciente
+      fetchSesionesPaciente(idPaciente);
+    } else {
+      // Fetch todas las sesiones
+      fetchSesiones();
+      fetchPacientes();
+    }
+  }, [idPaciente]);
 
   const fetchPacientes = async () => {
     try {
@@ -26,6 +34,21 @@ const Sesiones = () => {
       console.log(response);
     } catch (error) {
       console.error("Error fetching data:", error);
+    }
+  };
+  const fetchSesionesPaciente = async (idPaciente) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:4000/sesiones/${idPaciente}`
+      );
+      const sesionesConFormato = response.data.map((sesion) => ({
+        ...sesion,
+        fechaHora: new Date(sesion.fechaHora).toLocaleString(), // Convertir a formato legible
+      }));
+      setSesiones(sesionesConFormato);
+      console.log(response.data); // Para verificar los datos en la consola
+    } catch (error) {
+      console.error("Error fetching sesiones:", error);
     }
   };
 
@@ -109,6 +132,9 @@ const Sesiones = () => {
     }
   };
 
+  const onDetails = (nroSesion) => {
+    navigate(`/informes/${nroSesion}`);
+  };
   const onEdit = (sesion) => {
     // Convertir la fecha y hora al formato requerido por el input datetime-local
     const formattedFechaHora = new Date(sesion.fechaHora)
@@ -236,7 +262,7 @@ const Sesiones = () => {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-white rounded-lg shadow-md">
+        <table className="bg-white p-8 rounded-lg shadow-md max-w-full mx-auto h-full mt-8">
           <thead>
             <tr>
               <th className="px-4 py-2 border">Fecha y Hora</th>
@@ -275,8 +301,8 @@ const Sesiones = () => {
                       }}
                       className={`py-1 px-2 rounded focus:outline-none focus:shadow-outline mr-2 ${
                         sesion.estado !== "Pendiente"
-                          ? "bg-gray-400 text-gray-600 cursor-not-allowed" // Estilos para el botón deshabilitado
-                          : "bg-blue-500 hover:bg-blue-700 text-white"
+                          ? "bg-gray-300 text-gray-600 cursor-not-allowed" // Estilos para el botón deshabilitado
+                          : "bg-yellow-500 hover:bg-yellow-600 text-white" // Amarillo para el estado habilitado
                       }`}
                       disabled={sesion.estado !== "Pendiente"}
                     >
@@ -292,14 +318,42 @@ const Sesiones = () => {
                           onDelete(sesion.nroSesion);
                         }
                       }}
-                      className={`py-1 px-2 rounded focus:outline-none focus:shadow-outline" ${
+                      className={`py-1 px-2 rounded focus:outline-none focus:shadow-outline mr-2 ${
                         sesion.estado !== "Pendiente"
-                          ? "bg-gray-400 text-gray-600 cursor-not-allowed" // Estilos para el botón deshabilitado
+                          ? "bg-gray-300 text-gray-600 cursor-not-allowed" // Estilos para el botón deshabilitado
                           : "bg-red-500 hover:bg-red-700 text-white"
                       }`}
                       disabled={sesion.estado !== "Pendiente"}
                     >
                       Cancelar
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (sesion.estado === "Pendiente") {
+                          // Redirigir a la pantalla para cargar el informe
+                          navigate(`/cargar-informe/${sesion.nroSesion}`);
+                        } else if (sesion.estado === "Realizado") {
+                          // Redirigir a la pantalla para ver el informe
+                          onDetails(sesion.nroSesion);
+                        } else {
+                          // Mostrar un mensaje o realizar alguna acción si es necesario
+                          // Para el estado Cancelado y otros casos si es necesario
+                        }
+                      }}
+                      className={`py-1 px-2 rounded focus:outline-none focus:shadow-outline ${
+                        sesion.estado === "Pendiente"
+                          ? "bg-green-500 hover:bg-green-600 text-white" // Verde para el estado Pendiente
+                          : sesion.estado === "Realizado"
+                          ? "bg-blue-500 hover:bg-blue-700 text-white" // Azul para el estado Realizado
+                          : "bg-gray-300 text-gray-500 cursor-not-allowed" // Gris para el estado Cancelado y deshabilitado
+                      }`}
+                      disabled={sesion.estado === "Cancelado"} // Deshabilitar el botón si el estado es Cancelado
+                    >
+                      {sesion.estado === "Pendiente"
+                        ? "Cargar Informe"
+                        : sesion.estado === "Realizado"
+                        ? "Ver Informe"
+                        : "Ver Informe"}
                     </button>
                   </td>
                 </tr>

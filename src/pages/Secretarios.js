@@ -500,7 +500,7 @@ const Secretarios = () => {
         </div>
       </form>
 
-      <table className="min-w-full bg-white border border-gray-200 mt-8">
+      <table className="bg-white p-8 rounded-lg shadow-md max-w-full mx-auto h-full mt-8">
         <thead>
           <tr>
             <th className="py-2 px-4 border-b">Número de Documento</th>

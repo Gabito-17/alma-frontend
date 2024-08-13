@@ -4,15 +4,17 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import Home from "./pages/Home";
+import InformeSesion from "./pages/InformeSesion";
+import InformeSesionSesion from "./pages/informeSesionSesion";
 import Personas from "./pages/Pacientes";
 import Especialidad from "./pages/parametros/Especialidad";
+import EstadoCivil from "./pages/parametros/EstadoCivil";
+import Ocupacion from "./pages/parametros/Ocupacion";
 import TipoDocumentos from "./pages/parametros/TipoDocumentos";
 import Psicologos from "./pages/Psicologos";
-import Sesiones from "./pages/Sesiones";
-import EstadoCivil from "./pages/parametros/EstadoCivil";
 import Secretarios from "./pages/Secretarios";
-import Ocupacion from "./pages/parametros/Ocupacion";
-import InformeSesion from "./pages/InformeSesion";
+import Sesiones from "./pages/Sesiones";
+import SesionesPaciente from "./pages/SesionesPaciente";
 
 function App() {
   return (
@@ -28,14 +30,25 @@ function App() {
         <div className="ml-32 pt-16">
           {" "}
           {/* Ajusta el margen izquierdo para evitar superposiciones */}
-          <div className="ml-32 flex-grow p-4">
+          <div className="ml-16 flex-grow p-4">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/psicologos" element={<Psicologos />} />
               <Route path="/pacientes" element={<Personas />} />
               <Route path="/sesiones" element={<Sesiones />} />
+              <Route
+                path="/sesiones/:idPaciente"
+                element={<SesionesPaciente />}
+              />
               <Route path="/secretarios" element={<Secretarios />} />
-              <Route path="/informeSesion" element={<InformeSesion />} />
+              <Route
+                path="/cargar-informe/:nroSesion"
+                element={<InformeSesion />}
+              />
+              <Route
+                path="/informes/:nroSesion"
+                element={<InformeSesionSesion />}
+              />
               <Route
                 path="/parametros/especialidad"
                 element={<Especialidad />}
@@ -43,14 +56,12 @@ function App() {
               <Route
                 path="/parametros/tipo-documento"
                 element={<TipoDocumentos />}
-              /> <Route
-              path="/parametros/estado-civil"
-              element={<EstadoCivil />}
-            />
+              />{" "}
               <Route
-              path="/parametros/ocupacion"
-              element={<Ocupacion />}
-            />
+                path="/parametros/estado-civil"
+                element={<EstadoCivil />}
+              />
+              <Route path="/parametros/ocupacion" element={<Ocupacion />} />
             </Routes>
           </div>
         </div>

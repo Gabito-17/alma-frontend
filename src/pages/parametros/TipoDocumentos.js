@@ -189,6 +189,7 @@ const TipoDocumentos = () => {
             name="admiteLetras"
             checked={formData.admiteLetras}
             onChange={handleInputChange}
+            disabled={editing}
           />
         </div>
 
@@ -240,65 +241,59 @@ const TipoDocumentos = () => {
         />
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white rounded-lg shadow-md">
-          <thead>
-            <tr>
-              <th className="px-4 py-2 border">Sigla</th>
-              <th className="px-4 py-2 border">Descripción</th>
-              <th className="px-4 py-2 border">Cantidad de digitos</th>
-              <th className="px-4 py-2 border">admite letras?</th>
-              <th className="px-4 py-2 border">Acciones</th>
+      <table className="bg-white p-8 rounded-lg shadow-md w-full max-w-full mx-auto h-full mt-8">
+        <thead>
+          <tr>
+            <th className="px-4 py-2 border">Sigla</th>
+            <th className="px-4 py-2 border">Descripción</th>
+            <th className="px-4 py-2 border">Cantidad de digitos</th>
+            <th className="px-4 py-2 border">admite letras?</th>
+            <th className="px-4 py-2 border">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {tipoDocumentos.map((tipoDocumento) => (
+            <tr key={tipoDocumento.idTipoDocumento}>
+              <td className="px-4 py-2 border">{tipoDocumento.sigla}</td>
+              <td className="px-4 py-2 border">{tipoDocumento.descripcion}</td>
+              <td className="px-4 py-2 border">{tipoDocumento.cantDigitos}</td>
+              <td className="px-4 py-2 border">
+                {tipoDocumento.admiteLetras ? "Sí" : "No"}
+              </td>
+              <td className="px-4 py-2 border">
+                <button
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        "¿Estás seguro de que deseas editar este tipo de documento?"
+                      )
+                    ) {
+                      onEdit(tipoDocumento);
+                    }
+                  }}
+                  className="bg-yellow-500 hover:bg-yellow-700 text-white py-1 px-2 rounded mr-2"
+                >
+                  Editar
+                </button>
+                <button
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        "¿Estás seguro de que deseas eliminar este tipo de documento?"
+                      )
+                    ) {
+                      onDelete(tipoDocumento.idTipoDocumento);
+                    }
+                  }}
+                  className="bg-red-500 hover:bg-red-700 text-white  py-1 px-2 rounded"
+                >
+                  Eliminar
+                </button>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {tipoDocumentos.map((tipoDocumento) => (
-              <tr key={tipoDocumento.idTipoDocumento}>
-                <td className="px-4 py-2 border">{tipoDocumento.sigla}</td>
-                <td className="px-4 py-2 border">
-                  {tipoDocumento.descripcion}
-                </td>
-                <td className="px-4 py-2 border">
-                  {tipoDocumento.cantDigitos}
-                </td>
-                <td className="px-4 py-2 border">
-                  {tipoDocumento.admiteLetras ? "Sí" : "No"}
-                </td>
-                <td className="px-4 py-2 border">
-                  <button
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          "¿Estás seguro de que deseas editar este tipo de documento?"
-                        )
-                      ) {
-                        onEdit(tipoDocumento);
-                      }
-                    }}
-                    className="bg-yellow-500 hover:bg-yellow-700 text-white py-1 px-2 rounded mr-2"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          "¿Estás seguro de que deseas eliminar este tipo de documento?"
-                        )
-                      ) {
-                        onDelete(tipoDocumento.idTipoDocumento);
-                      }
-                    }}
-                    className="bg-red-500 hover:bg-red-700 text-white  py-1 px-2 rounded"
-                  >
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Pacientes = () => {
   const [formData, setFormData] = useState({
@@ -22,8 +23,8 @@ const Pacientes = () => {
     OTRO: "Otro",
     // Agrega otros valores según tu enum
   };
-
   const [tiposDocumento, setTiposDocumento] = useState([]);
+  const navigate = useNavigate();
   const [estadoCivil, setEstadoCivil] = useState([]);
   const [psicologos, setPsicologos] = useState([]);
   const [pacientes, setpacientes] = useState([]);
@@ -123,6 +124,9 @@ const Pacientes = () => {
       );
     }
   };
+  const onDetails = (idPaciente) => {
+    navigate(`/sesiones/${idPaciente}`);
+  };
 
   const onEdit = (paciente) => {
     if (!paciente.tipoDocumento) {
@@ -132,7 +136,6 @@ const Pacientes = () => {
       );
       return;
     }
-
     setFormData({
       numeroDoc: paciente.numeroDoc,
       nombre: paciente.nombre,
@@ -151,12 +154,17 @@ const Pacientes = () => {
   };
 
   useEffect(() => {
-    fetchpacientes();
-    fetchTiposDocumento();
-    fetchEstadoCivil();
-    fetchPsicologos();
-    fetchOcupaciones();
+    const fetchData = async () => {
+      await fetchpacientes();
+      await fetchTiposDocumento();
+      await fetchEstadoCivil();
+      await fetchPsicologos();
+      await fetchOcupaciones();
+    };
+
+    fetchData();
   }, []);
+
   const fetchOcupaciones = async () => {
     try {
       const response = await axios.get("http://localhost:4000/ocupaciones");
@@ -641,9 +649,18 @@ const Pacientes = () => {
                       onDelete(paciente);
                     }
                   }}
-                  className="bg-red-500 hover:bg-red-700 text-white  py-1 px-2 rounded"
+                  className="bg-red-500 hover:bg-red-700 text-white  py-1 px-2 rounded mr-2"
                 >
                   Eliminar
+                </button>
+
+                <button
+                  onClick={() => {
+                    onDetails(paciente.id);
+                  }}
+                  className="bg-blue-500 hover:bg-blue-700 py-1 px-2 rounded text-white"
+                >
+                  Ver Sesiones
                 </button>
               </td>
             </tr>

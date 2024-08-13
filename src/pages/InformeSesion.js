@@ -1,30 +1,47 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 const InformeSesion = () => {
-  const [informes, setInformes] = useState([]);
+  const { nroSesion } = useParams();
+  const navigate = useNavigate();
+  const [informes] = useState([]);
   const [formData, setFormData] = useState({
-    tipo: "",
+    nroSesion: parseInt(nroSesion) || 0, // Convierte nroSesion a entero
+    tipoDescripcion: "",
     descripcion: "",
   });
-  const [filter, setFilter] = useState("");
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState("");
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
   useEffect(() => {
-    // Fetch initial data
-    fetchInformes();
-  }, []);
+    // Fetch informe data when nroSesion changes
+    const fetchInformeData = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:4000/informes/${nroSesion}`
+        );
+        const informe = response.data;
+        if (!informe) {
+          return;
+        }
 
-  const fetchInformes = async () => {
-    try {
-      const response = await axios.get("http://localhost:4000/informes");
-      setInformes(response.data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
+        // Update formData with the fetched data
+        setFormData({
+          nroSesion: informe.sesion.nroSesion,
+          tipoDescripcion: informe.tipoDescripcion,
+          descripcion: informe.descripcion,
+        });
+
+        setEditing(true); // Set editing mode to true since we're fetching existing data
+      } catch (error) {}
+    };
+
+    if (nroSesion) {
+      fetchInformeData();
     }
-  };
+  }, [nroSesion]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -33,14 +50,15 @@ const InformeSesion = () => {
       [name]: value,
     });
 
-    if (name === "tipo") {
+    if (name === "tipoDescripcion") {
       checkInformeExists(value);
     }
   };
 
   const checkInformeExists = (tipo) => {
     const exists = informes.some(
-      (informe) => informe.tipo === tipo && informe.id !== formData.id
+      (informe) =>
+        informe.tipoDescripcion === tipo && informe.id !== formData.id
     );
     if (exists) {
       setError("El tipo de informe ya existe.");
@@ -53,85 +71,66 @@ const InformeSesion = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (editing) {
-      // Update informe
-      try {
-        await axios.patch(`http://localhost:4000/informes/${formData.id}`, {
-          tipo: formData.tipo,
-          descripcion: formData.descripcion,
-        });
-        setEditing(false);
-        fetchInformes();
-      } catch (error) {
-        console.error("Error updating data:", error);
-      }
-    } else {
-      // Create new informe
-      try {
-        await axios.post("http://localhost:4000/informes", formData);
-        fetchInformes();
-      } catch (error) {
-        console.error("Error creating data:", error);
-      }
-    }
-    setFormData({
-      tipo: "",
-      descripcion: "",
-    });
-  };
-
-  const onEdit = (informe) => {
-    setFormData(informe);
-    setEditing(true);
-  };
-
-  const onDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:4000/informes/${id}`);
-      fetchInformes();
+      if (editing) {
+        await axios.patch(
+          `http://localhost:4000/informes/${nroSesion}`,
+          formData
+        );
+        alert("Informe de Sesión actualizado con éxito");
+      } else {
+        await axios.post("http://localhost:4000/informes", formData);
+        alert("Informe de Sesión creado con éxito");
+      }
+      navigate(`/informes/${nroSesion}`);
     } catch (error) {
-      console.error("Error deleting data:", error);
+      alert(error.response.data.message);
+      console.error("Error creating or updating data:", error);
     }
+
+    setFormData({
+      tipoDescripcion: "",
+      descripcion: "",
+      nroSesion: parseInt(nroSesion) || 0, // Asegúrate de mantener nroSesion como entero
+    });
+    setEditing(false);
   };
 
   const handleCancel = () => {
     setFormData({
-      tipo: "",
+      tipoDescripcion: "",
       descripcion: "",
+      nroSesion: parseInt(nroSesion) || 0, // Mantén el nroSesion como entero
     });
     setEditing(false);
     setError("");
     setIsButtonDisabled(false);
   };
 
-  const handleFilterChange = (e) => {
-    setFilter(e.target.value);
-  };
-
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-1">
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-6 rounded-lg shadow-md mb-4"
+        className="bg-white p-6 rounded-lg shadow-md w-full max-w-full"
       >
         <h2 className="text-xl font-bold mb-4">
           {editing ? "Modificando Informe" : "Registrando Informe"}
         </h2>
-        <div className="mb-4 flex">
-          <div className="w-1/2 pr-2">
-            <label className="block text-gray-700 mb-2">Tipo de Descripción:</label>
+        <div className="mb-4 flex flex-col space-y-4">
+          <div>
+            <label className="block text-gray-700 mb-2">
+              Tipo de Descripción:
+            </label>
             <input
               type="text"
-              name="tipo"
-              value={formData.tipo}
+              name="tipoDescripcion"
+              value={formData.tipoDescripcion}
               onChange={handleInputChange}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              disabled={editing}
             />
             {error && <p className="text-red-500 text-xs italic">{error}</p>}
           </div>
-          <div className="w-1/2 pl-2">
+          <div>
             <label className="block text-gray-700 mb-2">Descripción:</label>
             <textarea
               name="descripcion"
@@ -143,7 +142,7 @@ const InformeSesion = () => {
           </div>
         </div>
 
-        <div className="col-span-4 flex justify-end space-x-4">
+        <div className="flex justify-end space-x-4">
           {editing ? (
             <>
               <button
@@ -180,70 +179,6 @@ const InformeSesion = () => {
           )}
         </div>
       </form>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Informes de Sesiones</h2>
-        <input
-          type="text"
-          placeholder="Filtrar por Tipo"
-          value={filter}
-          onChange={handleFilterChange}
-          className="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-        />
-      </div>
-
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white rounded-lg shadow-md">
-          <thead>
-            <tr>
-              <th className="px-4 py-2 border">Tipo</th>
-              <th className="px-4 py-2 border">Descripción</th>
-              <th className="px-4 py-2 border">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {informes
-              .filter((informe) =>
-                informe.tipo.toLowerCase().includes(filter.toLowerCase())
-              )
-              .map((informe) => (
-                <tr key={informe.id}>
-                  <td className="px-4 py-2 border">{informe.tipo}</td>
-                  <td className="px-4 py-2 border">{informe.descripcion}</td>
-                  <td className="px-4 py-2 border">
-                    <button
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            "¿Estás seguro de que deseas editar este informe?"
-                          )
-                        ) {
-                          onEdit(informe);
-                        }
-                      }}
-                      className="bg-yellow-500 hover:bg-yellow-700 text-white py-1 px-2 rounded mr-2"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            "¿Estás seguro de que deseas eliminar este informe?"
-                          )
-                        ) {
-                          onDelete(informe.id);
-                        }
-                      }}
-                      className="bg-red-500 hover:bg-red-700 text-white py-1 px-2 rounded"
-                    >
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-      </div>
     </div>
   );
 };

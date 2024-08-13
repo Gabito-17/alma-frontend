@@ -205,59 +205,57 @@ const Ocupacion = () => {
         />
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white rounded-lg shadow-md">
-          <thead>
-            <tr>
-              <th className="px-4 py-2 border">Nombre</th>
-              <th className="px-4 py-2 border">Descripción</th>
-              <th className="px-4 py-2 border">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ocupaciones
-              .filter((ocupacion) =>
-                ocupacion.nombre.toLowerCase().includes(filter.toLowerCase())
-              )
-              .map((ocupacion) => (
-                <tr key={ocupacion.idOcupacion}>
-                  <td className="px-4 py-2 border">{ocupacion.nombre}</td>
-                  <td className="px-4 py-2 border">{ocupacion.descripcion}</td>
-                  <td className="px-4 py-2 border">
-                    <button
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            "¿Estás seguro de que deseas editar esta ocupacion?"
-                          )
-                        ) {
-                          onEdit(ocupacion);
-                        }
-                      }}
-                      className="bg-yellow-500 hover:bg-yellow-700 text-white py-1 px-2 rounded mr-2"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            "¿Estás seguro de que deseas eliminar esta ocupacion?"
-                          )
-                        ) {
-                          onDelete(ocupacion.idOcupacion);
-                        }
-                      }}
-                      className="bg-red-500 hover:bg-red-700 text-white py-1 px-2 rounded"
-                    >
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-      </div>
+      <table className="bg-white p-8 rounded-lg shadow-md w-full max-w-full mx-auto h-full mt-8">
+        <thead>
+          <tr>
+            <th className="px-4 py-2 border">Nombre</th>
+            <th className="px-4 py-2 border">Descripción</th>
+            <th className="px-4 py-2 border">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {ocupaciones
+            .filter((ocupacion) =>
+              ocupacion.nombre.toLowerCase().includes(filter.toLowerCase())
+            )
+            .map((ocupacion) => (
+              <tr key={ocupacion.idOcupacion}>
+                <td className="px-4 py-2 border">{ocupacion.nombre}</td>
+                <td className="px-4 py-2 border">{ocupacion.descripcion}</td>
+                <td className="px-4 py-2 border">
+                  <button
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          "¿Estás seguro de que deseas editar esta ocupacion?"
+                        )
+                      ) {
+                        onEdit(ocupacion);
+                      }
+                    }}
+                    className="bg-yellow-500 hover:bg-yellow-700 text-white py-1 px-2 rounded mr-2"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          "¿Estás seguro de que deseas eliminar esta ocupacion?"
+                        )
+                      ) {
+                        onDelete(ocupacion.idOcupacion);
+                      }
+                    }}
+                    className="bg-red-500 hover:bg-red-700 text-white py-1 px-2 rounded"
+                  >
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            ))}
+        </tbody>
+      </table>
     </div>
   );
 };

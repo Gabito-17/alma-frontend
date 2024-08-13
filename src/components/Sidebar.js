@@ -42,21 +42,11 @@ const Sidebar = () => {
             </Link>
           </li>
           <li className="mb-2 p-2" style={{ userSelect: "none" }}>
-          <Link
-              to="/secretarios"
-              className="hover:bg-gray-700 rounded block"
-            >
+            <Link to="/secretarios" className="hover:bg-gray-700 rounded block">
               Secretarios
             </Link>
           </li>
-          <li className="mb-2 p-2" style={{ userSelect: "none" }}>
-          <Link
-              to="/informeSesion"
-              className="hover:bg-gray-700 rounded block"
-            >
-              Informes Sesiones
-            </Link>
-          </li>
+
           <li className="mb-2 p-2" style={{ userSelect: "none" }}>
             Derivaciones
           </li>
