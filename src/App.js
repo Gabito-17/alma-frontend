@@ -30,7 +30,7 @@ function App() {
         <div className="ml-32 pt-16">
           {" "}
           {/* Ajusta el margen izquierdo para evitar superposiciones */}
-          <div className="ml-16 flex-grow p-4">
+          <div className="ml-16 flex-grow p-16">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/psicologos" element={<Psicologos />} />
