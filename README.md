@@ -17,7 +17,7 @@ Puedes verificar que Node.js y `npm` se hayan instalado correctamente ejecutando
 ```bash
 $ node -v
 $ npm -v
-...
+..
 
 ## Scripts Disponibles
 
