@@ -1,4 +1,4 @@
-# Comenzando con Create React App
+# ALMA-Frontend
 
 Este proyecto fue inicializado con [Create React App](https://github.com/facebook/create-react-app).
 
