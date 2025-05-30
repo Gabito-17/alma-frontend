@@ -1,13 +1,13 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-import { loginSchema } from "@/lib/validators/login-schema";
 import { loginUser } from "@/actions/auth/login";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -17,8 +17,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { loginSchema } from "@/lib/validators/login-schema";
 
 type Inputs = z.infer<typeof loginSchema>;
 
@@ -44,7 +44,7 @@ export function LoginForm({
       return;
     }
 
-    // Guarda el token 
+    // Guarda el token
     localStorage.setItem("access_token", result.accessToken);
 
     // Opcional: muestra toast de éxito
@@ -89,7 +89,7 @@ export function LoginForm({
               <FormItem>
                 <FormLabel>Contraseña</FormLabel>
                 <FormControl>
-                  <Input type="password" {...field} />
+                  <Input type="password" placeholder="******" {...field} />
                 </FormControl>
                 <FormMessage name="password" />
               </FormItem>
@@ -106,6 +106,15 @@ export function LoginForm({
             disabled={form.formState.isSubmitting}
           >
             {form.formState.isSubmitting ? "Ingresando..." : "Ingresar"}
+          </Button>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={form.formState.isSubmitting}
+          >
+            {form.formState.isSubmitting
+              ? "Ingresando..."
+              : "Iniciar con Google"}
           </Button>
         </div>
 
