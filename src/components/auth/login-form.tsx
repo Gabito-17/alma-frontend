@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { loginSchema } from "@/lib/validators/login-schema";
+import GoogleLoginButton from "./login-with-google-form";
 
 type Inputs = z.infer<typeof loginSchema>;
 
@@ -107,24 +108,16 @@ export function LoginForm({
           >
             {form.formState.isSubmitting ? "Ingresando..." : "Ingresar"}
           </Button>
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={form.formState.isSubmitting}
-          >
-            {form.formState.isSubmitting
-              ? "Ingresando..."
-              : "Iniciar con Google"}
-          </Button>
-        </div>
-
-        <div className="text-center text-sm">
-          ¿No tienes cuenta?
-          <a href="/register" className="underline underline-offset-4">
-            Crea una
-          </a>
+          <GoogleLoginButton />
         </div>
       </form>
+
+      <div className="text-center text-sm">
+        ¿No tienes cuenta?
+        <a href="/register" className="underline underline-offset-4">
+          Crea una
+        </a>
+      </div>
     </Form>
   );
 }
